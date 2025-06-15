@@ -55,12 +55,12 @@ class ArkimeCaller:
             dst = session.get('destination.ip', '')
             bytes_count = session.get('network.bytes', 0)
             
-            if src == ip_address:  # Outgoing
+            if src == ip:  # Outgoing
                 outgoing += 1
                 bytes_sent += bytes_count
                 if dst:
                     destinations.add(dst)
-            elif dst == ip_address:  # Incoming
+            elif dst == ip:  # Incoming
                 incoming += 1
                 bytes_received += bytes_count
                 if src:
