@@ -8,7 +8,7 @@ Use Python Watchdog to monitor AI Detector logs at "/sec/ai-detector/output/anom
 import queue
 import threading
 import time
-from watchdog.observers import Observer
+from watchdog.observers.polling import PollingObserver
 from watchdog.events import FileSystemEventHandler
 from anomaly_analyzer import AnomalyAnalyzer
 from anomalous_node import AnomalousNode
@@ -68,7 +68,8 @@ class ArkimeProcessor(FileSystemEventHandler):
 
 # Usage
 processor = ArkimeProcessor()
-observer = Observer()
+# check for new files every 1 sec
+observer = PollingObserver(timeout=1)
 observer.schedule(processor, "/sec/ai-detector/output/anomaly_logs/", recursive=False)
 observer.start()
 
