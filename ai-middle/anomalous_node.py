@@ -1,4 +1,4 @@
-class AnomalousIP:
+class AnomalousNode:
     def __init__(self, ip=None, recon_error=0.0, mlp_score=0.0, 
                  detected_by="", log_timestamp="", total_nodes_in_graph=0, 
                  source_file="", composite_score = 0.0):

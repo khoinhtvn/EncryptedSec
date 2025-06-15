@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from typing import List, Dict, Optional
 import pandas as pd
 import numpy as np
-from anomalous_ip import AnomalousIP
+from anomalous_node import AnomalousNode
 
 
 class AnomalyAnalyzer:
@@ -123,7 +123,7 @@ class AnomalyAnalyzer:
 
         for i, anomaly in enumerate(sorted_anomalies[:top_n], 1):
             score = self.calculate_composite_score(anomaly, score_method)
-            anomalous_ips.append(AnomalousIP(
+            anomalous_ips.append(AnomalousNode(
                 ip=anomaly.get('ip', 'N/A'),
                 recon_error=anomaly['recon_error'],
                 mlp_score=anomaly['mlp_score'],

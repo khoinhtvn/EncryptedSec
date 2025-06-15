@@ -11,7 +11,8 @@ import time
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from anomaly_analyzer import AnomalyAnalyzer
-from anomalous_ip import AnomalousIP
+from anomalous_node import AnomalousNode
+from arkime_caller import ArkimeCaller
 
 class ArkimeProcessor(FileSystemEventHandler):
     
@@ -43,11 +44,11 @@ class ArkimeProcessor(FileSystemEventHandler):
     
     def _process_file(self, file_path):
         # Read alert file
-        anomalous_ips = self._read_alert(file_path)
+        anomalous_nodes = self._read_alert(file_path)
         
         # Query Arkime for each IP
-        for ip in anomalous_ips:
-            print(f"   Got Arkime data for {ip.ip}")
+        for node in anomalous_nodes:
+            print(self._query_arkime(node.ip))
         
         print(f"COMPLETED PROCESSING ALERT: {file_path}")
     
@@ -61,11 +62,9 @@ class ArkimeProcessor(FileSystemEventHandler):
         
     
     def _query_arkime(self, ip):
-        # TODO: You fill this in
-        # Make API call to Arkime
-        print(f"   📡 Querying Arkime for {ip}")
-        time.sleep(2)  # Simulate slow API call
-        return {}  # Placeholder
+        caller = ArkimeCaller()
+        # set time window to get info is within the last 1 hour
+        return caller.get_basic_traffic_information(ip,1)
 
 # Usage
 processor = ArkimeProcessor()
