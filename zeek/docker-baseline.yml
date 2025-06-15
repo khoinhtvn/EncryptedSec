@@ -1,0 +1,12 @@
+services:
+  zeek:
+    image: zeek/zeek:lts
+    container_name: zeek-baseline
+    network_mode: host
+    privileged: true
+    volumes:
+      - /sec/zeek/logs:/opt/zeek/logs
+      - /sec/zeek/config:/opt/zeek/share/zeek/site
+    env_file:
+      - .env
+    command: tail -f /dev/null

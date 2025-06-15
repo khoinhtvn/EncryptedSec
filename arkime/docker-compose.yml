@@ -1,0 +1,35 @@
+services:
+  capture:
+    image: ghcr.io/arkime/arkime/arkime:v5-latest
+    network_mode: "host"
+    command: /opt/arkime/bin/docker.sh capture --update-geo --insecure
+    environment:
+      - ARKIME__elasticsearch=https://elastic:${ELASTIC_PASSWORD}@localhost:9200
+      - ARKIME__elasticsearchSSLVerify=false
+    volumes:
+      - /sec/arkime/raw:/opt/arkime/raw
+      - /sec/arkime/etc:/opt/arkime/etc
+      - /sec/elasticsearch/config/certs:/opt/arkime/certs
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+      - SYS_ADMIN
+    privileged: true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    restart: always
+
+  viewer:
+    image: ghcr.io/arkime/arkime/arkime:v5-latest
+    network_mode: "host"
+    command: /opt/arkime/bin/docker.sh viewer --insecure
+    environment:
+      - ARKIME__elasticsearch=https://elastic:${ELASTIC_PASSWORD}@localhost:9200
+      - ARKIME__elasticsearchSSLVerify=false
+    volumes:
+      - /sec/arkime/raw:/opt/arkime/raw
+      - /sec/arkime/etc:/opt/arkime/etc
+      - /sec/elasticsearch/config/certs:/opt/arkime/certs
+    restart: always

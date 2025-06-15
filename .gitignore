@@ -1,0 +1,138 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+venv/
+myenv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# C++ Build Files
+cmake-build-debug/
+cmake-build-release/
+build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+
+# Compiled Object Files
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Logs and Data
+logs/
+*.log
+training_logs/
+anomaly_logs/
+
+# Model and Training Data
+model_checkpoints/
+embeddings/
+*.h5
+*.pkl
+*.pth
+*.pt
+
+# Statistics and Output
+stats/
+output/
+vis/
+
+# Elasticsearch Data
+elasticsearch/data/
+elasticsearch/config/certs/
+
+# Zeek Logs (keep structure, ignore content)
+zeek/logs/*/
+!zeek/logs/.gitkeep
+
+# Raw Data Files
+*.pcap
+*.pcap.zst
+*.pcapng
+
+# Backup Files
+*.bak
+*.backup
+*.archive
+
+# Docker Volumes and Data
+volumes/
+data/
+
+# IDE and Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Environment Variables
+.env
+.env.local
+.env.production
+.env.staging
+
+# Temporary Files
+*.tmp
+*.temp
+
+# Documentation Build
+docs/build/
+docs/_build/
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# Other settings
+config/
+etc/
+
+# These files belong to another project, only Dockerfiles don't
+ai-detector/graph_monitor/*
+ai-detector/Log2Graph/*
+!ai-detector/graph_monitor/Dockerfile
+!ai-detector/Log2Graph/Dockerfile
+
+# Configuration Files (keep templates, ignore actual configs)
+config.ini
+!config.ini.template
+!config.ini.example

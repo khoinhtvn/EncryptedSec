@@ -1,0 +1,46 @@
+services:
+  log2graph:
+    build: ./Log2Graph
+    volumes:
+      - /sec/zeek/logs:/var/log/zeek:ro
+      - shared-graphs:/output
+    command: ["/var/log/zeek", "--export-path", "/output"]
+
+  graph-monitor-train:
+    build: ./graph_monitor
+    volumes:
+      - shared-graphs:/input:ro
+      - /sec/ai-detector/output:/output
+    command: [
+      "python", "main.py", 
+      "--path", "/input",
+      "--mode", "train",
+      "--anomaly_path", "/output/anomaly_logs",
+      "--model_path", "/output/model_checkpoints",
+      "--stats_path", "/output/stats"
+    ]
+    depends_on:
+      - log2graph
+    profiles:
+      - train
+
+  graph-monitor-detect:
+    build: ./graph_monitor
+    volumes:
+      - shared-graphs:/input:ro
+      - /sec/ai-detector/output:/output
+    command: [
+      "python", "main.py",
+      "--path", "/input", 
+      "--mode", "detect",
+      "--anomaly_path", "/output/anomaly_logs",
+      "--model_path", "/output/model_checkpoints",
+      "--stats_path", "/output/stats"
+    ]
+    depends_on:
+      - log2graph
+    profiles:
+      - detect
+
+volumes:
+  shared-graphs:
