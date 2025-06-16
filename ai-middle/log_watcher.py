@@ -8,11 +8,15 @@ Use Python Watchdog to monitor AI Detector logs at "/sec/ai-detector/output/anom
 import queue
 import threading
 import time
+import json
+from datetime import datetime
 from watchdog.observers.polling import PollingObserver
 from watchdog.events import FileSystemEventHandler
 from anomaly_analyzer import AnomalyAnalyzer
 from anomalous_node import AnomalousNode
 from arkime_caller import ArkimeCaller
+
+LOG_PATH = "/sec/ai-middle/logs/"
 
 class ArkimeProcessor(FileSystemEventHandler):
     
@@ -47,8 +51,19 @@ class ArkimeProcessor(FileSystemEventHandler):
         anomalous_nodes = self._read_alert(file_path)
         
         # Query Arkime for each IP
+        results = []
+
         for node in anomalous_nodes:
-            print(self._query_arkime(node.ip))
+            result = self._query_arkime(node.ip)
+            results.append(result)
+            print(result)
+
+        # Create a new log file, ended with current timestamp
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        filename = f"arkime_analysis_{timestamp}.json"
+
+        with open(LOG_PATH + filename, 'w') as f:
+            json.dump(results, f, indent=2)
         
         print(f"COMPLETED PROCESSING ALERT: {file_path}")
     
@@ -57,8 +72,8 @@ class ArkimeProcessor(FileSystemEventHandler):
         analyzer = AnomalyAnalyzer()
 
         analyzer.load_log_file(file_path)
-        # Only extract the top 2 most suspicious IPs for an alert file
-        return analyzer.summarize_top_anomalies(2)
+        # Only extract the top 1 most suspicious IPs for an alert file
+        return analyzer.summarize_top_anomalies(1)
         
     
     def _query_arkime(self, ip):
@@ -74,7 +89,6 @@ observer.schedule(processor, "/sec/ai-detector/output/anomaly_logs/", recursive=
 observer.start()
 
 print("Watching for .json files... (Press Ctrl+C to stop)")
-print("Test: echo '{}' > test.json")
 
 try:
     while True:
