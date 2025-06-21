@@ -9,6 +9,8 @@ import queue
 import threading
 import time
 import json
+import os
+import re
 from datetime import datetime
 from watchdog.observers.polling import PollingObserver
 from watchdog.events import FileSystemEventHandler
@@ -50,6 +52,11 @@ class ArkimeProcessor(FileSystemEventHandler):
         # Read alert file
         anomalous_nodes = self._read_alert(file_path)
         
+        # Skip executing of no anomalous ip is found
+        if not anomalous_nodes:
+            print(f"No anomalies found in {file_path}, skipping...")
+            return
+
         # Query Arkime for each IP
         results = []
 

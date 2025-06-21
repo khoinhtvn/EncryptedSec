@@ -102,12 +102,12 @@ class AnomalyAnalyzer:
         """Generate summary of top anomalous nodes, return a list 2 of anomalous objects whose scores are top"""
         if not self.anomaly_data:
             print("No anomaly data loaded.")
-            return
+            return []
         
         all_anomalies = self.get_all_anomalies_flattened()
         if not all_anomalies:
             print("No anomalies found.")
-            return
+            return []
         
         # Sort by composite score
         sorted_anomalies = sorted(all_anomalies, 
