@@ -39,7 +39,13 @@ class ArkimeCaller:
         }
 
         try:
-            response = self.session.get(f'{self.base_url}/api/sessions', params=params)
+            response = requests.get(
+                f'{self.base_url}/api/sessions',
+                params=params,
+                auth=HTTPDigestAuth(self.username, self.password),
+                verify=False,  # Force disable SSL verification like --insecure
+                timeout=30
+            )
             
             if response.status_code != 200:
                 return self._error_response(ip, time_window_hours, f"HTTP {response.status_code}")
