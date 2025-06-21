@@ -19,24 +19,25 @@ from anomalous_node import AnomalousNode
 from arkime_caller import ArkimeCaller
 
 LOG_PATH = "/sec/ai-middle/logs/"
+NUMBER_OF_NODES = 3
+
 
 class ArkimeProcessor(FileSystemEventHandler):
-    
     def __init__(self):
         # The queue that connects producer and consumer
         self.file_queue = queue.Queue()
-        
+
         # Start background worker
         self.worker_thread = threading.Thread(target=self._worker_loop, daemon=True)
         self.worker_thread.start()
         print("Background worker started")
-    
+
     # PRODUCER: Fast file detection
     def on_created(self, event):
-        if not event.is_directory and event.src_path.endswith('.json'):
+        if not event.is_directory and event.src_path.endswith(".json"):
             print(f"NEW ALERT FOUND: {event.src_path}")
             self.file_queue.put(event.src_path)  # Add to queue instantly
-    
+
     # CONSUMER: Slow processing in background
     def _worker_loop(self):
         while True:
@@ -47,66 +48,67 @@ class ArkimeProcessor(FileSystemEventHandler):
                 self.file_queue.task_done()
             except queue.Empty:
                 continue  # No files to process, keep waiting
-    
+
     def _process_file(self, file_path):
-        # Read alert file
         anomalous_nodes = self._read_alert(file_path)
-        
-        # Skip executing of no anomalous ip is found
+
         if not anomalous_nodes:
             print(f"No anomalies found in {file_path}, skipping...")
             return
 
-        # Query Arkime for each IP
-        results = []
-
         formatted_timestamp = self._parse_timestamp_from_filename(file_path)
-
-        for node in anomalous_nodes:
-            result = self._query_arkime(node.ip)
-            result["composite_score"] = node.composite_score
-            results.append(result)
-
-        # Create a new log file, ended with current timestamp
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        filename = f"arkime_analysis_{timestamp}.json"
+        filename = f"arkime_analysis_{timestamp}.ndjson"
 
-        # Create the report content
-        report = dict()
+        with open(LOG_PATH + filename, "w") as f:
+            for node in anomalous_nodes:
+                result = self._query_arkime(node.ip)
 
-        report["detection_timestamp"] = formatted_timestamp
-        report["number_of_anomalous_ips"] = len(results)
-        report["anomalous_ips"] = results
+                document = {
+                    "@timestamp": formatted_timestamp,
+                    "ip_address": result.get("ip_address"),
+                    "time_window_hours": result.get("time_window_hours"),
+                    "total_matching_sessions": result.get("total_matching_sessions", 0),
+                    "analyzed_sessions": result.get("analyzed_sessions", 0),
+                    "outgoing_connections": result.get("outgoing_connections", 0),
+                    "incoming_connections": result.get("incoming_connections", 0),
+                    "total_bytes_sent": result.get("total_bytes_sent", 0),
+                    "total_bytes_received": result.get("total_bytes_received", 0),
+                    "unique_destinations": result.get("unique_destinations", 0),
+                    "unique_sources": result.get("unique_sources", 0),
+                    "composite_score": node.composite_score,
+                }
 
-        # Save the report
-        with open(LOG_PATH + filename, 'w') as f:
-            json.dump(report, f, indent=2)
-        
+                if "error" in result:
+                    document["arkime_error"] = result["error"]
+
+                f.write(json.dumps(document) + "\n")
+
         print(f"COMPLETED PROCESSING ALERT: {file_path}")
-    
-    def _parse_timestamp_from_filename(self,file_path):
+
+    def _parse_timestamp_from_filename(self, file_path):
         try:
             # Extract just the filename from the full path
             filename = os.path.basename(file_path)
-            
+
             # Extract timestamp
-            pattern = r'(\d{8})_(\d{6})'
+            pattern = r"(\d{8})_(\d{6})"
             match = re.search(pattern, filename)
-            
+
             if not match:
                 print(f"Warning: No timestamp found in filename: {filename}")
                 return None
-            
+
             date_str = match.group(1)  # YYYYMMDD
             time_str = match.group(2)  # HHMMSS
-            
+
             dt = datetime.strptime(f"{date_str}{time_str}", "%Y%m%d%H%M%S")
-            
-            # Format time like "@timestamp":"2025-06-20T15:29:26.000Z" 
+
+            # Format time like "@timestamp":"2025-06-20T15:29:26.000Z"
             formatted_timestamp = dt.strftime("%Y-%m-%dT%H:%M:%S.000Z")
-            
+
             return formatted_timestamp
-            
+
         except Exception as e:
             print(f"Error parsing timestamp from {file_path}: {e}")
             return None
@@ -117,13 +119,13 @@ class ArkimeProcessor(FileSystemEventHandler):
 
         analyzer.load_log_file(file_path)
         # Only extract the top 1 most suspicious IPs for an alert file
-        return analyzer.summarize_top_anomalies(1)
-        
-    
+        return analyzer.summarize_top_anomalies(NUMBER_OF_NODES)
+
     def _query_arkime(self, ip):
         caller = ArkimeCaller()
         # set time window to get info is within the last 1 hour
-        return caller.get_basic_traffic_information(ip,1)
+        return caller.get_basic_traffic_information(ip, 1)
+
 
 # Usage
 processor = ArkimeProcessor()

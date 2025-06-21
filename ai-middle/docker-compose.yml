@@ -14,3 +14,15 @@ services:
       - /sec/ai-detector/output/anomaly_logs:/sec/ai-detector/output/anomaly_logs:ro
       - /sec/ai-middle/logs:/sec/ai-middle/logs
       - ./.env:/app/.env:ro
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:9.0.2
+    user: root
+    network_mode: "host"
+    restart: unless-stopped
+    volumes:
+      - /sec/ai-middle/logs:/usr/share/filebeat/logs:ro
+      - /sec/ai-middle/config/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+    environment:
+      - ELASTICSEARCH_HOSTS=https://localhost:9200
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
