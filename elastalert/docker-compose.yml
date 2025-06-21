@@ -1,0 +1,16 @@
+services:
+  elastalert:
+    image: jertel/elastalert2:latest
+    network_mode: "host"
+    restart: unless-stopped
+    environment:
+      - ES_HOST=localhost
+      - ES_PORT=9200
+      - ES_USERNAME=elastic
+      - ES_PASSWORD=${ELASTIC_PASSWORD}
+      - ES_USE_SSL=true
+      - ES_VERIFY_CERTS=false
+    volumes:
+      - /sec/elastalert/config.yml:/opt/elastalert/config.yaml:ro
+      - /sec/elastalert/rules:/opt/elastalert/rules:ro
+      - /sec/elastalert/smtp_auth.yml:/opt/elastalert/smtp_auth.yml:ro

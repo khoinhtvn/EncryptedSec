@@ -1,0 +1,2 @@
+user: ${RECIPIENT_EMAIL}
+password: ${APP_PASSWORD}

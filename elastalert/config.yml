@@ -1,0 +1,15 @@
+rules_folder: /opt/elastalert/rules
+run_every:
+  minutes: 1
+buffer_time:
+  minutes: 5
+es_host: localhost
+es_port: 9200
+es_username: elastic
+es_password: ${ELASTIC_PASSWORD}
+use_ssl: true
+verify_certs: false
+writeback_index: elastalert_status
+writeback_alias: elastalert_alerts
+alert_time_limit:
+  days: 2
