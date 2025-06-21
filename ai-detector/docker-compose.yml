@@ -3,13 +3,13 @@ services:
     build: ./Log2Graph
     volumes:
       - /sec/zeek/logs:/var/log/zeek:ro
-      - shared-graphs:/output
+      - /sec/ai-detector/output/shared_graphs:/output
     command: ["/var/log/zeek", "--export-path", "/output"]
 
   graph-monitor-train:
     build: ./graph_monitor
     volumes:
-      - shared-graphs:/input:ro
+      - /sec/ai-detector/output/shared_graphs:/input:ro
       - /sec/ai-detector/output:/output
     command: [
       "python", "main.py", 
@@ -27,7 +27,7 @@ services:
   graph-monitor-detect:
     build: ./graph_monitor
     volumes:
-      - shared-graphs:/input:ro
+      - /sec/ai-detector/output/shared_graphs:/input:ro
       - /sec/ai-detector/output:/output
     command: [
       "python", "main.py",
@@ -41,6 +41,3 @@ services:
       - log2graph
     profiles:
       - detect
-
-volumes:
-  shared-graphs:

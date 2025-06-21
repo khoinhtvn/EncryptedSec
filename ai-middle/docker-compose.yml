@@ -1,0 +1,15 @@
+services:
+  ai-middle:
+    build: .
+    restart: unless-stopped
+    
+    environment:
+      - ARKIME_URL=${ARKIME_URL:-https://localhost:8005}
+      - ARKIME_USERNAME=${ARKIME_USERNAME}
+      - ARKIME_PASSWORD=${ARKIME_PASSWORD}
+      - ARKIME_VERIFY_SSL=${ARKIME_VERIFY_SSL:-false}
+    
+    volumes:
+      - /sec/ai-detector/output/anomaly_logs:/sec/ai-detector/output/anomaly_logs:ro
+      - /sec/ai-middle/logs:/sec/ai-middle/logs
+      - ./.env:/app/.env:ro

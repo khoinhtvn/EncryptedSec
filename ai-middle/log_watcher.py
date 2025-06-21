@@ -53,20 +53,57 @@ class ArkimeProcessor(FileSystemEventHandler):
         # Query Arkime for each IP
         results = []
 
+        formatted_timestamp = self._parse_timestamp_from_filename(file_path)
+
         for node in anomalous_nodes:
             result = self._query_arkime(node.ip)
+            result["composite_score"] = node.composite_score
             results.append(result)
-            print(result)
 
         # Create a new log file, ended with current timestamp
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         filename = f"arkime_analysis_{timestamp}.json"
 
+        # Create the report content
+        report = dict()
+
+        report["detection_timestamp"] = formatted_timestamp
+        report["number_of_anomalous_ips"] = len(results)
+        report["anomalous_ips"] = results
+
+        # Save the report
         with open(LOG_PATH + filename, 'w') as f:
-            json.dump(results, f, indent=2)
+            json.dump(report, f, indent=2)
         
         print(f"COMPLETED PROCESSING ALERT: {file_path}")
     
+    def _parse_timestamp_from_filename(self,file_path):
+        try:
+            # Extract just the filename from the full path
+            filename = os.path.basename(file_path)
+            
+            # Extract timestamp
+            pattern = r'(\d{8})_(\d{6})'
+            match = re.search(pattern, filename)
+            
+            if not match:
+                print(f"Warning: No timestamp found in filename: {filename}")
+                return None
+            
+            date_str = match.group(1)  # YYYYMMDD
+            time_str = match.group(2)  # HHMMSS
+            
+            dt = datetime.strptime(f"{date_str}{time_str}", "%Y%m%d%H%M%S")
+            
+            # Format time like "@timestamp":"2025-06-20T15:29:26.000Z" 
+            formatted_timestamp = dt.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+            
+            return formatted_timestamp
+            
+        except Exception as e:
+            print(f"Error parsing timestamp from {file_path}: {e}")
+            return None
+
     # use Anomaly Analyzer to parse the log and calculate composite scores
     def _read_alert(self, file_path):
         analyzer = AnomalyAnalyzer()
