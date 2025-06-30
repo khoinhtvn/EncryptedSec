@@ -1,2 +1,2 @@
-user: ${RECIPIENT_EMAIL}
+user: ${SENDER_EMAIL}
 password: ${APP_PASSWORD}

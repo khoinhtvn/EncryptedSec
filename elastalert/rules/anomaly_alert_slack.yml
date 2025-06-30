@@ -1,0 +1,52 @@
+name: AI Anomaly Detection Alert
+type: any
+index: .ds-ai-middle-filebeat-*
+realert:
+  minutes: 5
+
+filter:
+- exists:
+    field: composite_score
+
+alert:
+- "slack"
+
+slack_webhook_url: "${SLACK_WEBHOOK_URL}"
+
+alert_subject: "🚨 Network Anomaly Detected - IP: {0} (Score: {1})"
+alert_subject_args:
+- ip_address
+- composite_score
+
+alert_text: |
+  📍 *Threat Details:*
+  • IP Address: `{0}`
+  • Composite Score: `{1}`
+  • Detection Time: `{2}`
+  
+  📊 *Traffic Analysis:*
+  • Total Sessions: `{3:,}`
+  • Outgoing Connections: `{4}`
+  • Incoming Connections: `{5}`
+  • Bytes Sent: `{6:,}`
+  • Bytes Received: `{7:,}`
+  • Unique Destinations: `{8}`
+  
+  🔍 *Investigation:*
+  <https://localhost:8005/#/sessions?expression=ip=={0}|Click here for Arkime Analysis>
+  
+  ⚠️ *Immediate Actions Required:*
+  1. Investigate traffic patterns in Arkime
+  2. Check for lateral movement indicators
+  3. Validate if this is legitimate activity
+
+alert_text_args:
+- ip_address
+- composite_score
+- "@timestamp"
+- total_matching_sessions
+- outgoing_connections
+- incoming_connections
+- total_bytes_sent
+- total_bytes_received
+- unique_destinations

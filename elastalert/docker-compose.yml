@@ -10,7 +10,7 @@ services:
       - ES_PASSWORD=${ELASTIC_PASSWORD}
       - ES_USE_SSL=true
       - ES_VERIFY_CERTS=false
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
     volumes:
       - /sec/elastalert/config.yml:/opt/elastalert/config.yaml:ro
       - /sec/elastalert/rules:/opt/elastalert/rules:ro
-      - /sec/elastalert/smtp_auth.yml:/opt/elastalert/smtp_auth.yml:ro
