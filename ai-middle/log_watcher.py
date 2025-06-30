@@ -19,7 +19,7 @@ from anomalous_node import AnomalousNode
 from arkime_caller import ArkimeCaller
 
 LOG_PATH = "/sec/ai-middle/logs/"
-NUMBER_OF_NODES = 3
+THRESHOLD = 100
 
 
 class ArkimeProcessor(FileSystemEventHandler):
@@ -118,8 +118,8 @@ class ArkimeProcessor(FileSystemEventHandler):
         analyzer = AnomalyAnalyzer()
 
         analyzer.load_log_file(file_path)
-        # Only extract the top 1 most suspicious IPs for an alert file
-        return analyzer.summarize_top_anomalies(NUMBER_OF_NODES)
+        # Only extract the IPs having a composite score over 100
+        return analyzer.summarize_top_anomalies(THRESHOLD)
 
     def _query_arkime(self, ip):
         caller = ArkimeCaller()

@@ -98,8 +98,9 @@ class AnomalyAnalyzer:
         
         return all_anomalies
     
-    def summarize_top_anomalies(self, top_n: int = 10, score_method: str = "weighted") -> None:
-        """Generate summary of top anomalous nodes, return a list 2 of anomalous objects whose scores are top"""
+    def summarize_top_anomalies(self, threshold: float = 100.0, score_method: str = "weighted", 
+                           filter_fps: bool = True) -> List[AnomalousNode]:
+        """Generate summary of anomalous nodes above threshold"""
         if not self.anomaly_data:
             print("No anomaly data loaded.")
             return []
@@ -109,21 +110,29 @@ class AnomalyAnalyzer:
             print("No anomalies found.")
             return []
         
-        # Sort by composite score
-        sorted_anomalies = sorted(all_anomalies, 
-                                key=lambda x: self.calculate_composite_score(x, score_method), 
+        # Apply false positive filtering if requested
+        if filter_fps:
+            all_anomalies = self.filter_false_positives(all_anomalies)
+            print(f"After filtering: {len(all_anomalies)} anomalies remaining")
+        
+        # Recalculate composite scores with specified method
+        for anomaly in all_anomalies:
+            anomaly['composite_score'] = self.calculate_composite_score(anomaly, score_method)
+        
+        # Filter by threshold instead of taking top N
+        filtered_anomalies = [a for a in all_anomalies if a['composite_score'] > threshold]
+        
+        # Sort by composite score (highest first)
+        sorted_anomalies = sorted(filtered_anomalies, 
+                                key=lambda x: x['composite_score'], 
                                 reverse=True)
         
-        # Detection methods
-        methods = pd.Series([a['detected_by'] for a in all_anomalies]).value_counts()
-        for method, count in methods.items():
-            print(f"  {method}: {count} ({count/len(all_anomalies)*100:.1f}%)")
+        print(f"Found {len(sorted_anomalies)} nodes with composite score > {threshold}")
         
-        anomalous_ips = []
-
-        for i, anomaly in enumerate(sorted_anomalies[:top_n], 1):
-            score = self.calculate_composite_score(anomaly, score_method)
-            anomalous_ips.append(AnomalousNode(
+        # Create AnomalousNode objects for all qualifying anomalies
+        anomalous_nodes = []
+        for anomaly in sorted_anomalies:
+            node = AnomalousNode(
                 ip=anomaly.get('ip', 'N/A'),
                 recon_error=anomaly['recon_error'],
                 mlp_score=anomaly['mlp_score'],
@@ -131,7 +140,8 @@ class AnomalyAnalyzer:
                 log_timestamp=anomaly['log_timestamp'],
                 total_nodes_in_graph=anomaly['total_nodes_in_graph'],
                 source_file=anomaly['source_file'],
-                composite_score = score
-            ))
+                composite_score=anomaly['composite_score']
+            )
+            anomalous_nodes.append(node)
         
-        return anomalous_ips
+        return anomalous_nodes
